@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "engram-memory"
+version = "0.2.0"
+description = "Complete project memory for AI code assistants. One call, full context, zero guessing."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+    { name = "Karan Panchal", email = "karan.panchal2105@gmail.com" },
+]
+keywords = ["ai", "memory", "mcp", "claude", "codex", "indexing", "code-review", "tree-sitter"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
+]
+dependencies = [
+    "click>=8.1",
+    "watchdog>=4.0",
+    "tree-sitter>=0.23",
+    "mcp>=1.0",
+]
+
+[project.optional-dependencies]
+languages = [
+    "tree-sitter-python>=0.23",
+    "tree-sitter-javascript>=0.23",
+    "tree-sitter-typescript>=0.23",
+    "tree-sitter-go>=0.23",
+    "tree-sitter-rust>=0.23",
+    "tree-sitter-java>=0.23",
+]
+all = [
+    "tree-sitter-python>=0.23",
+    "tree-sitter-javascript>=0.23",
+    "tree-sitter-typescript>=0.23",
+    "tree-sitter-go>=0.23",
+    "tree-sitter-rust>=0.23",
+    "tree-sitter-java>=0.23",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+engram = "engram.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/karanpanchall/engram"
+Repository = "https://github.com/karanpanchall/engram"
+Issues = "https://github.com/karanpanchall/engram/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["engram"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["engram"]
+
+[tool.coverage.report]
+show_missing = true
