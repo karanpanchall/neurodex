@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "engram-ai"
+name = "neurodex"
 version = "0.2.0"
 description = "Complete project memory for AI code assistants. One call, full context, zero guessing."
 readme = "README.md"
