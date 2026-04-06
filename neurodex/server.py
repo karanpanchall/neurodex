@@ -1,4 +1,4 @@
-"""ENGRAM MCP Server.
+"""NEURODEX MCP Server.
 
 Exposes search, memory, and project management tools to Claude Code / Codex.
 Starts instantly — no model to load, just open SQLite files.
@@ -16,23 +16,23 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
-from engram.brain import render_brain_for_repo
-from engram.chunker import chunk_insight
-from engram.contracts import analyze_cross_project_impact, render_cross_project_impact
-from engram.impact import analyze_impact, render_impact
-from engram.config import EngramConfig, load_config
-from engram.project import detect_repo
-from engram.registry import Registry
-from engram.search import RankedResult, SearchEngine
-from engram.store import RepoStore
-from engram.workspace import WorkspaceManager
+from neurodex.brain import render_brain_for_repo
+from neurodex.chunker import chunk_insight
+from neurodex.contracts import analyze_cross_project_impact, render_cross_project_impact
+from neurodex.impact import analyze_impact, render_impact
+from neurodex.config import EngramConfig, load_config
+from neurodex.project import detect_repo
+from neurodex.registry import Registry
+from neurodex.search import RankedResult, SearchEngine
+from neurodex.store import RepoStore
+from neurodex.workspace import WorkspaceManager
 
 _session_context: dict = {}
 
 
 def _get_cwd() -> str:
     """Get current working directory, respecting MCP server cwd."""
-    return os.environ.get("ENGRAM_CWD", os.getcwd())
+    return os.environ.get("NEURODEX_CWD", os.getcwd())
 
 
 def _result_to_dict(result: RankedResult) -> dict:
@@ -61,13 +61,13 @@ def create_server() -> Server:
     registry = Registry(config)
     workspace_mgr = WorkspaceManager(registry, config)
     search_engine = SearchEngine(config)
-    server = Server("engram")
+    server = Server("neurodex")
 
     @server.list_tools()
     async def list_tools() -> list[Tool]:
         return [
             Tool(
-                name="engram_search",
+                name="neurodex_search",
                 description=(
                     "Search indexed project files, code symbols, docs, and saved insights. "
                     "Returns relevant code/doc chunks ranked by BM25 relevance. "
@@ -88,7 +88,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_compact_search",
+                name="neurodex_compact_search",
                 description=(
                     "Search returning metadata only (file path, symbol, line range, summary). "
                     "Use this first, then read specific files with your Read tool. Saves tokens."
@@ -104,7 +104,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_symbols",
+                name="neurodex_symbols",
                 description="List indexed code symbols (functions, classes) matching a pattern. Like 'go to definition' across the whole project.",
                 inputSchema={
                     "type": "object",
@@ -116,7 +116,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_save",
+                name="neurodex_save",
                 description=(
                     "Save a decision, insight, or finding for future sessions. "
                     "Use this to persist important context that should survive across conversations. "
@@ -136,7 +136,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_trace",
+                name="neurodex_trace",
                 description=(
                     "Trace import/dependency chain from a file. "
                     "Shows what a file imports and what imports it. "
@@ -158,7 +158,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_cross_impact",
+                name="neurodex_cross_impact",
                 description=(
                     "Cross-project impact: what breaks in OTHER projects when you change a backend endpoint? "
                     "Finds API contracts between backend routes and frontend/mobile consumers. "
@@ -173,7 +173,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_references",
+                name="neurodex_references",
                 description=(
                     "Find ALL references to a symbol across the entire project. "
                     "Catches imports, calls, inheritance, type annotations, string refs. "
@@ -188,7 +188,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_impact",
+                name="neurodex_impact",
                 description=(
                     "Blast-radius analysis: what breaks if you change this file? "
                     "Shows affected files, test coverage gaps, and risk score. "
@@ -204,12 +204,12 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_brain",
+                name="neurodex_brain",
                 description=(
                     "CALL THIS FIRST on session start. Returns complete project brain — "
                     "every module, every function signature, every dependency chain, "
                     "and past session insights. After this call you know the entire project "
-                    "without reading any files. Use engram_search only for deep dives."
+                    "without reading any files. Use neurodex_search only for deep dives."
                 ),
                 inputSchema={
                     "type": "object",
@@ -219,17 +219,17 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_status",
+                name="neurodex_status",
                 description="Get index status: indexed repos, workspaces, current context, health info.",
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
-                name="engram_list_projects",
+                name="neurodex_list_projects",
                 description="List all indexed repos and workspaces. Use when unsure which project to search.",
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
-                name="engram_workspace_create",
+                name="neurodex_workspace_create",
                 description="Create a workspace linking multiple repos for cross-repo search.",
                 inputSchema={
                     "type": "object",
@@ -245,7 +245,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_workspace_add",
+                name="neurodex_workspace_add",
                 description="Add a repo to an existing workspace.",
                 inputSchema={
                     "type": "object",
@@ -257,7 +257,7 @@ def create_server() -> Server:
                 },
             ),
             Tool(
-                name="engram_set_context",
+                name="neurodex_set_context",
                 description="Set which project/workspace to search for this session. Persists across tool calls.",
                 inputSchema={
                     "type": "object",
@@ -291,33 +291,33 @@ def create_server() -> Server:
     @server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         try:
-            if name == "engram_search":
+            if name == "neurodex_search":
                 return _handle_search(arguments)
-            elif name == "engram_compact_search":
+            elif name == "neurodex_compact_search":
                 return _handle_compact_search(arguments)
-            elif name == "engram_symbols":
+            elif name == "neurodex_symbols":
                 return _handle_symbols(arguments)
-            elif name == "engram_save":
+            elif name == "neurodex_save":
                 return _handle_save(arguments)
-            elif name == "engram_trace":
+            elif name == "neurodex_trace":
                 return _handle_trace(arguments)
-            elif name == "engram_cross_impact":
+            elif name == "neurodex_cross_impact":
                 return _handle_cross_impact(arguments)
-            elif name == "engram_references":
+            elif name == "neurodex_references":
                 return _handle_references(arguments)
-            elif name == "engram_impact":
+            elif name == "neurodex_impact":
                 return _handle_impact(arguments)
-            elif name == "engram_brain":
+            elif name == "neurodex_brain":
                 return _handle_brain(arguments)
-            elif name == "engram_status":
+            elif name == "neurodex_status":
                 return _handle_status()
-            elif name == "engram_list_projects":
+            elif name == "neurodex_list_projects":
                 return _handle_list_projects()
-            elif name == "engram_workspace_create":
+            elif name == "neurodex_workspace_create":
                 return _handle_workspace_create(arguments)
-            elif name == "engram_workspace_add":
+            elif name == "neurodex_workspace_add":
                 return _handle_workspace_add(arguments)
-            elif name == "engram_set_context":
+            elif name == "neurodex_set_context":
                 return _handle_set_context(arguments)
             else:
                 return [TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -413,7 +413,7 @@ def create_server() -> Server:
             repos = registry.list_repos()
             if not repos:
                 return [TextContent(type="text", text=json.dumps({
-                    "error": "No indexed repos. Run `engram init` first."
+                    "error": "No indexed repos. Run `neurodex init` first."
                 }))]
             repo_id = repos[0].id
             repo_name = repos[0].name
@@ -504,7 +504,7 @@ def create_server() -> Server:
             else:
                 repos = registry.list_repos()
                 if not repos:
-                    return [TextContent(type="text", text="No projects indexed. Run `engram init` in a project directory.")]
+                    return [TextContent(type="text", text="No projects indexed. Run `neurodex init` in a project directory.")]
                 return [TextContent(type="text", text=json.dumps({
                     "status": "pick_a_project",
                     "available": [
@@ -518,7 +518,7 @@ def create_server() -> Server:
 
         brain_text = render_brain_for_repo(repo_id, repo_name, config)
         if not brain_text:
-            return [TextContent(type="text", text=f"No index found for repo {repo_id}. Run `engram init`.")]
+            return [TextContent(type="text", text=f"No index found for repo {repo_id}. Run `neurodex init`.")]
 
         return [TextContent(type="text", text=brain_text)]
 

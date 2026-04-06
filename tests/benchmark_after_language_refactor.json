@@ -1,0 +1,344 @@
+{
+  "label": "AFTER LANGUAGE REFACTOR",
+  "timestamp": "2026-04-06 13:26:12",
+  "queries": [
+    {
+      "id": 1,
+      "query": "what is the ContentPlatform project and its architecture",
+      "category": "docs",
+      "status": "PASS",
+      "found_at_rank": 1,
+      "expected": [
+        "CLAUDE.md"
+      ],
+      "got": [
+        "CLAUDE.md",
+        "RESEARCH.md",
+        "TASKS.md",
+        "sample_editor.html"
+      ]
+    },
+    {
+      "id": 2,
+      "query": "engineering principles and coding conventions",
+      "category": "docs",
+      "status": "PASS",
+      "found_at_rank": 1,
+      "expected": [
+        "CLAUDE.md"
+      ],
+      "got": [
+        "CLAUDE.md",
+        "RESEARCH.md",
+        "TASKS.md",
+        "Dockerfile",
+        "__commits__"
+      ]
+    },
+    {
+      "id": 3,
+      "query": "Celery task queue configuration with priority queues",
+      "category": "infra",
+      "status": "PASS",
+      "found_at_rank": 1,
+      "expected": [
+        "config.py",
+        "TASKS.md"
+      ],
+      "got": [
+        "TASKS.md",
+        "TRACKER.md",
+        "RESEARCH.md"
+      ]
+    },
+    {
+      "id": 4,
+      "query": "user authentication login register service",
+      "category": "auth",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "service.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "CLAUDE.md",
+        "RESEARCH.md",
+        "TRACKER.md"
+      ]
+    },
+    {
+      "id": 5,
+      "query": "JWT token creation and password hashing security",
+      "category": "auth",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "security.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "CLAUDE.md"
+      ]
+    },
+    {
+      "id": 6,
+      "query": "Google and Apple OAuth provider integration",
+      "category": "auth",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "oauth.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "CLAUDE.md",
+        "TRACKER.md"
+      ]
+    },
+    {
+      "id": 7,
+      "query": "User model with email and password fields",
+      "category": "auth",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "models.py"
+      ],
+      "got": [
+        "CLAUDE.md",
+        "RESEARCH.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "id": 8,
+      "query": "brand persona builder generation",
+      "category": "brands",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "persona_builder.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "__commits__",
+        "railway.toml"
+      ]
+    },
+    {
+      "id": 9,
+      "query": "BrandProfile model with voice colors fonts",
+      "category": "brands",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "models.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "manifest.json"
+      ]
+    },
+    {
+      "id": 10,
+      "query": "brand RAG retriever chunker embedder",
+      "category": "brands",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "retriever.py",
+        "chunker.py",
+        "embedder.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "CLAUDE.md",
+        "__commits__"
+      ]
+    },
+    {
+      "id": 11,
+      "query": "content post workflow state machine transitions",
+      "category": "content",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "workflow.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "CLAUDE.md",
+        "TRACKER.md"
+      ]
+    },
+    {
+      "id": 12,
+      "query": "PostService create update submit review approve",
+      "category": "content",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "service.py"
+      ],
+      "got": [
+        "RESEARCH.md",
+        "TASKS.md",
+        "sample_editor.html"
+      ]
+    },
+    {
+      "id": 13,
+      "query": "ContentPost PostVersion PostMedia database models",
+      "category": "content",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "models.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "sample_editor.html"
+      ]
+    },
+    {
+      "id": 14,
+      "query": "AI generation AgentRuntime execute generate stream",
+      "category": "generation",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "runtime.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "sample_editor.html",
+        "__commits__"
+      ]
+    },
+    {
+      "id": 15,
+      "query": "caption generation skill with brand persona voice",
+      "category": "generation",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "generate_caption.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "__commits__"
+      ]
+    },
+    {
+      "id": 16,
+      "query": "generation Celery background task execute job",
+      "category": "generation",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "generation.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "celery.log",
+        "RESEARCH.md",
+        "TRACKER.md"
+      ]
+    },
+    {
+      "id": 17,
+      "query": "FastAPI application factory main router middleware",
+      "category": "infra",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "main.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "celery.log",
+        "railway.toml"
+      ]
+    },
+    {
+      "id": 18,
+      "query": "SQLAlchemy database session engine get_db",
+      "category": "infra",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "database.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "CLAUDE.md",
+        "RESEARCH.md",
+        "alembic.ini"
+      ]
+    },
+    {
+      "id": 19,
+      "query": "base repository CRUD operations pagination",
+      "category": "infra",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "base_repository.py",
+        "pagination.py"
+      ],
+      "got": [
+        "CLAUDE.md",
+        "TASKS.md",
+        "RESEARCH.md",
+        "Dockerfile"
+      ]
+    },
+    {
+      "id": 20,
+      "query": "post scheduling publishing platform adapter",
+      "category": "publishing",
+      "status": "FAIL",
+      "found_at_rank": null,
+      "expected": [
+        "service.py",
+        "base.py",
+        "bundle_adapter.py"
+      ],
+      "got": [
+        "TASKS.md",
+        "RESEARCH.md",
+        "TRACKER.md"
+      ]
+    }
+  ],
+  "metrics": {
+    "total_queries": 20,
+    "hit_at_1": 3,
+    "hit_at_1_pct": 15.0,
+    "recall_at_3": 3,
+    "recall_at_3_pct": 15.0,
+    "recall_at_5": 3,
+    "recall_at_5_pct": 15.0,
+    "mrr": 0.15,
+    "category_recall_at_3": {
+      "docs": 100.0,
+      "infra": 25.0,
+      "auth": 0.0,
+      "brands": 0.0,
+      "content": 0.0,
+      "generation": 0.0,
+      "publishing": 0.0
+    }
+  }
+}

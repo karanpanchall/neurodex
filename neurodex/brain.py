@@ -23,8 +23,8 @@ from dataclasses import dataclass, field
 from itertools import groupby
 from pathlib import Path
 
-from engram.config import EngramConfig
-from engram.store import RepoStore
+from neurodex.config import EngramConfig
+from neurodex.store import RepoStore
 
 
 @dataclass

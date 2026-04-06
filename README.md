@@ -1,23 +1,23 @@
-# ENGRAM
+# NEURODEX
 
 Complete project memory for AI code assistants. One call, full context, zero guessing.
 
-ENGRAM gives LLMs persistent, symbol-level knowledge of your entire codebase across sessions. No extra AI models, no cloud, no API keys. Built on SQLite FTS5 and tree-sitter.
+NEURODEX gives LLMs persistent, symbol-level knowledge of your entire codebase across sessions. No extra AI models, no cloud, no API keys. Built on SQLite FTS5 and tree-sitter.
 
 ```bash
-pip install engram-memory
-engram init                 # index your project
-engram install              # wire into Claude Code / Codex
+pip install neurodex
+neurodex init                 # index your project
+neurodex install              # wire into Claude Code / Codex
 ```
 
 ## What It Does
 
-Your AI assistant starts every session knowing nothing. ENGRAM fixes that.
+Your AI assistant starts every session knowing nothing. NEURODEX fixes that.
 
 ```
-Without ENGRAM                          With ENGRAM
+Without NEURODEX                          With NEURODEX
 ─────────────────────                   ─────────────────────
-Session starts → blank                  Session starts → engram_brain()
+Session starts → blank                  Session starts → neurodex_brain()
 "What is this project?" → read 10+     → 14k tokens: every module,
   files, still incomplete                 every function signature,
 "Fix the auth bug" → grep, read 5        every dependency, every
@@ -48,12 +48,12 @@ graph TB
     end
 
     subgraph "MCP Server"
-        LLM[Claude / Codex] --> |engram_brain| BRAIN
-        LLM --> |engram_search| SEARCH
-        LLM --> |engram_impact| IMPACT
-        LLM --> |engram_references| REFS
-        LLM --> |engram_cross_impact| XPROJ
-        LLM --> |engram_save| FTS
+        LLM[Claude / Codex] --> |neurodex_brain| BRAIN
+        LLM --> |neurodex_search| SEARCH
+        LLM --> |neurodex_impact| IMPACT
+        LLM --> |neurodex_references| REFS
+        LLM --> |neurodex_cross_impact| XPROJ
+        LLM --> |neurodex_save| FTS
     end
 ```
 
@@ -64,10 +64,10 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant LLM as Claude / Codex
-    participant MCP as ENGRAM MCP Server
+    participant MCP as NEURODEX MCP Server
     participant DB as SQLite (local)
 
-    LLM->>MCP: engram_brain()
+    LLM->>MCP: neurodex_brain()
     MCP->>DB: Read nodes, edges, chunks, insights
     MCP-->>LLM: Complete project brain (~14k tokens)
     Note over LLM: Now knows every module,<br/>function signature, dependency,<br/>and past session decision
@@ -80,17 +80,17 @@ sequenceDiagram
 sequenceDiagram
     participant User
     participant LLM as Claude / Codex
-    participant MCP as ENGRAM MCP Server
+    participant MCP as NEURODEX MCP Server
 
     User->>LLM: "Rename BrandProfile to BrandIdentity"
-    LLM->>MCP: engram_references("BrandProfile")
+    LLM->>MCP: neurodex_references("BrandProfile")
     MCP-->>LLM: 13 references in 13 files with exact lines
-    LLM->>MCP: engram_impact("brands/models.py")
+    LLM->>MCP: neurodex_impact("brands/models.py")
     MCP-->>LLM: 20 affected symbols, risk 0.73
-    LLM->>MCP: engram_cross_impact("brands/models.py")
+    LLM->>MCP: neurodex_cross_impact("brands/models.py")
     MCP-->>LLM: 3 cross-project contracts affected
     LLM->>LLM: Makes targeted edits (reads only lines it changes)
-    LLM->>MCP: engram_save("Renamed BrandProfile → BrandIdentity")
+    LLM->>MCP: neurodex_save("Renamed BrandProfile → BrandIdentity")
     Note over MCP: Saved for future sessions
 ```
 
@@ -119,26 +119,26 @@ graph LR
     style MOB_API fill:#f96
 ```
 
-When you change a backend endpoint, `engram_cross_impact` finds every frontend and mobile file that consumes it.
+When you change a backend endpoint, `neurodex_cross_impact` finds every frontend and mobile file that consumes it.
 
 ## MCP Tools
 
 | Tool | Purpose |
 |------|---------|
-| `engram_brain` | Complete project brain. Call first on session start. |
-| `engram_search` | BM25 full-text search with synonym expansion |
-| `engram_compact_search` | Metadata-only search (saves tokens) |
-| `engram_symbols` | Find functions/classes by name pattern |
-| `engram_save` | Persist a decision or insight for future sessions |
-| `engram_references` | Find ALL references to a symbol across the project |
-| `engram_impact` | Blast-radius: what breaks if you change this file? |
-| `engram_cross_impact` | Cross-project: what breaks in other repos? |
-| `engram_trace` | Follow import/dependency chains |
-| `engram_brain` | Complete project context in one call |
-| `engram_status` | Index health and project info |
-| `engram_list_projects` | All indexed repos and workspaces |
-| `engram_workspace_create` | Group repos for cross-repo search |
-| `engram_set_context` | Set session search scope |
+| `neurodex_brain` | Complete project brain. Call first on session start. |
+| `neurodex_search` | BM25 full-text search with synonym expansion |
+| `neurodex_compact_search` | Metadata-only search (saves tokens) |
+| `neurodex_symbols` | Find functions/classes by name pattern |
+| `neurodex_save` | Persist a decision or insight for future sessions |
+| `neurodex_references` | Find ALL references to a symbol across the project |
+| `neurodex_impact` | Blast-radius: what breaks if you change this file? |
+| `neurodex_cross_impact` | Cross-project: what breaks in other repos? |
+| `neurodex_trace` | Follow import/dependency chains |
+| `neurodex_brain` | Complete project context in one call |
+| `neurodex_status` | Index health and project info |
+| `neurodex_list_projects` | All indexed repos and workspaces |
+| `neurodex_workspace_create` | Group repos for cross-repo search |
+| `neurodex_set_context` | Set session search scope |
 
 ## Project Brain
 
@@ -182,20 +182,20 @@ Every symbol has its file and exact line range. The LLM can target `service.py:4
 ### Install
 
 ```bash
-pip install engram-memory
+pip install neurodex
 ```
 
 ### Index a Project
 
 ```bash
 cd your-project
-engram init
+neurodex init
 ```
 
 ### Wire into Claude Code
 
 ```bash
-engram install
+neurodex install
 ```
 
 This adds the MCP server to `~/.claude/settings.json` and injects usage instructions into your project's `CLAUDE.md`.
@@ -203,31 +203,31 @@ This adds the MCP server to `~/.claude/settings.json` and injects usage instruct
 ### Index Multiple Projects
 
 ```bash
-cd backend && engram init
-cd ../frontend && engram init
-cd ../mobile && engram init
+cd backend && neurodex init
+cd ../frontend && neurodex init
+cd ../mobile && neurodex init
 ```
 
 ### Create a Workspace (Cross-Repo Search)
 
 ```bash
-engram workspace create "MyApp" /path/to/backend /path/to/frontend /path/to/mobile
+neurodex workspace create "MyApp" /path/to/backend /path/to/frontend /path/to/mobile
 ```
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `engram init [path]` | Index a project directory |
-| `engram status` | Show all indexed projects and health |
-| `engram brain [path]` | Generate and display the project brain |
-| `engram search "query"` | Test search from terminal |
-| `engram reindex [path]` | Force full re-index |
-| `engram workspace create NAME [paths...]` | Create a workspace |
-| `engram workspace add NAME path` | Add repo to workspace |
-| `engram workspace list` | List all workspaces |
-| `engram auto-save` | Extract insights from Claude Code history |
-| `engram install` | Add MCP server to Claude Code settings |
+| `neurodex init [path]` | Index a project directory |
+| `neurodex status` | Show all indexed projects and health |
+| `neurodex brain [path]` | Generate and display the project brain |
+| `neurodex search "query"` | Test search from terminal |
+| `neurodex reindex [path]` | Force full re-index |
+| `neurodex workspace create NAME [paths...]` | Create a workspace |
+| `neurodex workspace add NAME path` | Add repo to workspace |
+| `neurodex workspace list` | List all workspaces |
+| `neurodex auto-save` | Extract insights from Claude Code history |
+| `neurodex install` | Add MCP server to Claude Code settings |
 
 ## Benchmarks
 
@@ -260,7 +260,7 @@ Cross-project on GakkoDeck (4 repos, 1542 files):
 | Call relationships | Edges table | Regex heuristic |
 | Inheritance chains | Edges table | AST class parsing |
 | Test coverage links | Edges table | File + function pattern matching |
-| Session insights | Chunks table | Explicit `engram_save` calls |
+| Session insights | Chunks table | Explicit `neurodex_save` calls |
 | API endpoints | Extracted at query time | Route decorator parsing |
 | Cross-project contracts | Computed at query time | Endpoint-to-consumer matching |
 

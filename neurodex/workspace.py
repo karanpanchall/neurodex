@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from engram.config import EngramConfig
-from engram.project import RepoIdentity, detect_repo
-from engram.registry import Registry, RepoRecord, WorkspaceRecord
+from neurodex.config import EngramConfig
+from neurodex.project import RepoIdentity, detect_repo
+from neurodex.registry import Registry, RepoRecord, WorkspaceRecord
 
 
 class WorkspaceManager:

@@ -56,7 +56,7 @@ dev = [
 ]
 
 [project.scripts]
-engram = "engram.cli:main"
+neurodex = "neurodex.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/karanpanchall/engram"
@@ -64,14 +64,14 @@ Repository = "https://github.com/karanpanchall/engram"
 Issues = "https://github.com/karanpanchall/engram/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["engram"]
+packages = ["neurodex"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["engram"]
+source = ["neurodex"]
 
 [tool.coverage.report]
 show_missing = true

@@ -1,12 +1,12 @@
-"""ENGRAM CLI.
+"""NEURODEX CLI.
 
 Commands:
-  engram init       — Index current project (shows progress)
-  engram status     — Show index health
-  engram reindex    — Force full re-index
-  engram search     — Test search from terminal
-  engram workspace  — Manage workspaces
-  engram install    — Add MCP server to Claude Code settings
+  neurodex init       — Index current project (shows progress)
+  neurodex status     — Show index health
+  neurodex reindex    — Force full re-index
+  neurodex search     — Test search from terminal
+  neurodex workspace  — Manage workspaces
+  neurodex install    — Add MCP server to Claude Code settings
 """
 
 from __future__ import annotations
@@ -20,22 +20,22 @@ from pathlib import Path
 
 import click
 
-from engram.brain import render_brain_for_repo
-from engram.chunker import chunk_insight
-from engram.config import load_config
-from engram.indexer import IndexProgress, Indexer
-from engram.project import detect_repo
-from engram.reconciler import Reconciler
-from engram.registry import Registry
-from engram.search import SearchEngine
-from engram.store import RepoStore
-from engram.workspace import WorkspaceManager
+from neurodex.brain import render_brain_for_repo
+from neurodex.chunker import chunk_insight
+from neurodex.config import load_config
+from neurodex.indexer import IndexProgress, Indexer
+from neurodex.project import detect_repo
+from neurodex.reconciler import Reconciler
+from neurodex.registry import Registry
+from neurodex.search import SearchEngine
+from neurodex.store import RepoStore
+from neurodex.workspace import WorkspaceManager
 
 
 @click.group()
-@click.version_option(package_name="engram-memory")
+@click.version_option(package_name="neurodex")
 def main():
-    """ENGRAM — Local memory for AI code assistants."""
+    """NEURODEX — Local memory for AI code assistants."""
     pass
 
 
@@ -68,7 +68,7 @@ def init(path: str):
         click.echo("Related projects found nearby:")
         for suggestion in suggestions:
             click.echo(f"  - {suggestion.name} ({', '.join(suggestion.local_paths)})")
-        click.echo("  Tip: `engram workspace create MyApp` to group them\n")
+        click.echo("  Tip: `neurodex workspace create MyApp` to group them\n")
 
     db_path = config.repo_db_path(identity.repo_id)
     store = RepoStore(db_path, identity.repo_id, identity.name)
@@ -119,11 +119,11 @@ def status():
     workspaces = registry.list_workspaces()
 
     if not repos:
-        click.echo("No projects indexed. Run `engram init` in a project directory.")
+        click.echo("No projects indexed. Run `neurodex init` in a project directory.")
         registry.close()
         return
 
-    click.echo(f"ENGRAM Status")
+    click.echo(f"NEURODEX Status")
     click.echo(f"{'=' * 50}")
     click.echo(f"Data: {config.data_dir}")
     click.echo(f"Projects: {len(repos)}  |  Workspaces: {len(workspaces)}")
@@ -167,7 +167,7 @@ def brain(path: str):
     repo = registry.get_repo(identity.repo_id)
 
     if not repo:
-        click.echo(f"Project '{identity.name}' not indexed. Run `engram init` first.")
+        click.echo(f"Project '{identity.name}' not indexed. Run `neurodex init` first.")
         registry.close()
         return
 
@@ -194,7 +194,7 @@ def reindex(path: str):
     db_path = config.repo_db_path(identity.repo_id)
 
     if not db_path.exists():
-        click.echo(f"Project '{identity.name}' is not indexed. Run `engram init` first.")
+        click.echo(f"Project '{identity.name}' is not indexed. Run `neurodex init` first.")
         registry.close()
         return
 
@@ -318,7 +318,7 @@ def workspace_list():
     workspaces = registry.list_workspaces()
 
     if not workspaces:
-        click.echo("No workspaces. Create one with `engram workspace create MyApp /path/to/repo1 /path/to/repo2`")
+        click.echo("No workspaces. Create one with `neurodex workspace create MyApp /path/to/repo1 /path/to/repo2`")
     else:
         for workspace_record in workspaces:
             click.echo(f"\n{workspace_record.name}:")
@@ -359,7 +359,7 @@ def auto_save(history_file: str | None):
     identity = detect_repo(Path.cwd())
     repo = registry.get_repo(identity.repo_id)
     if not repo:
-        click.echo(f"Project '{identity.name}' not indexed. Run `engram init` first.")
+        click.echo(f"Project '{identity.name}' not indexed. Run `neurodex init` first.")
         registry.close()
         return
 
@@ -515,7 +515,7 @@ def _process_history_entry(
 
 @main.command()
 def install():
-    """Add ENGRAM MCP server to Claude Code settings and CLAUDE.md instructions."""
+    """Add NEURODEX MCP server to Claude Code settings and CLAUDE.md instructions."""
     config = load_config()
     settings_path = Path.home() / ".claude" / "settings.json"
 
@@ -529,17 +529,17 @@ def install():
     if "mcpServers" not in settings:
         settings["mcpServers"] = {}
 
-    settings["mcpServers"]["engram"] = {
+    settings["mcpServers"]["neurodex"] = {
         "command": sys.executable,
-        "args": ["-m", "engram.server"],
+        "args": ["-m", "neurodex.server"],
     }
 
     with open(settings_path, "w") as f:
         json.dump(settings, f, indent=2)
 
-    click.echo(f"Added ENGRAM to {settings_path}")
+    click.echo(f"Added NEURODEX to {settings_path}")
     click.echo("MCP server config:")
-    click.echo(json.dumps(settings["mcpServers"]["engram"], indent=2))
+    click.echo(json.dumps(settings["mcpServers"]["neurodex"], indent=2))
 
     _inject_claude_md_instructions()
 
@@ -547,30 +547,30 @@ def install():
 
 
 def _inject_claude_md_instructions():
-    """Add ENGRAM usage instructions to project's CLAUDE.md for LLM auto-discovery."""
+    """Add NEURODEX usage instructions to project's CLAUDE.md for LLM auto-discovery."""
     claude_md = Path.cwd() / "CLAUDE.md"
-    engram_block = """
-## Project Memory (ENGRAM)
+    neurodex_block = """
+## Project Memory (NEURODEX)
 
-This project is indexed by ENGRAM for persistent memory across sessions.
+This project is indexed by NEURODEX for persistent memory across sessions.
 
-**On session start:** Call `engram_status()` to check index health and current context.
-**To search:** Use `engram_search("descriptive query 3+ words")` before reading files.
-**To save insights:** Call `engram_save(content="...", tags=["..."])` when you make important decisions.
-**Cross-repo search:** Use `engram_search(query="...", workspace="WorkspaceName")` for multi-repo projects.
-**Trace dependencies:** Use `engram_trace(file_path="...")` to understand import chains.
+**On session start:** Call `neurodex_status()` to check index health and current context.
+**To search:** Use `neurodex_search("descriptive query 3+ words")` before reading files.
+**To save insights:** Call `neurodex_save(content="...", tags=["..."])` when you make important decisions.
+**Cross-repo search:** Use `neurodex_search(query="...", workspace="WorkspaceName")` for multi-repo projects.
+**Trace dependencies:** Use `neurodex_trace(file_path="...")` to understand import chains.
 """
 
     if claude_md.exists():
         existing = claude_md.read_text()
-        if "ENGRAM" in existing:
-            click.echo("CLAUDE.md already has ENGRAM instructions.")
+        if "NEURODEX" in existing:
+            click.echo("CLAUDE.md already has NEURODEX instructions.")
             return
         with open(claude_md, "a") as f:
-            f.write("\n" + engram_block)
-        click.echo(f"Added ENGRAM instructions to {claude_md}")
+            f.write("\n" + neurodex_block)
+        click.echo(f"Added NEURODEX instructions to {claude_md}")
     else:
-        click.echo("No CLAUDE.md found. Create one or run `engram install` from project root.")
+        click.echo("No CLAUDE.md found. Create one or run `neurodex install` from project root.")
 
 
 if __name__ == "__main__":

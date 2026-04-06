@@ -1,7 +1,7 @@
-"""ENGRAM configuration management.
+"""NEURODEX configuration management.
 
-Data stored at ~/.local/share/engram/
-Config at ~/.config/engram/config.toml (optional)
+Data stored at ~/.local/share/neurodex/
+Config at ~/.config/neurodex/config.toml (optional)
 """
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-_DEFAULT_DATA_DIR = Path.home() / ".local" / "share" / "engram"
-_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "engram"
+_DEFAULT_DATA_DIR = Path.home() / ".local" / "share" / "neurodex"
+_DEFAULT_CONFIG_DIR = Path.home() / ".config" / "neurodex"
 
 SKIP_DIRS: frozenset[str] = frozenset({
     "node_modules", ".pnpm", "bower_components",
@@ -59,7 +59,7 @@ PRIORITY_FILES: tuple[str, ...] = (
 
 @dataclass(frozen=True)
 class EngramConfig:
-    """Immutable configuration for ENGRAM."""
+    """Immutable configuration for NEURODEX."""
 
     data_dir: Path = field(default_factory=lambda: _DEFAULT_DATA_DIR)
     config_dir: Path = field(default_factory=lambda: _DEFAULT_CONFIG_DIR)
@@ -88,6 +88,6 @@ class EngramConfig:
 
 def load_config() -> EngramConfig:
     """Load config, respecting environment variable overrides."""
-    data_dir = Path(os.environ.get("ENGRAM_DATA_DIR", _DEFAULT_DATA_DIR))
-    config_dir = Path(os.environ.get("ENGRAM_CONFIG_DIR", _DEFAULT_CONFIG_DIR))
+    data_dir = Path(os.environ.get("NEURODEX_DATA_DIR", _DEFAULT_DATA_DIR))
+    config_dir = Path(os.environ.get("NEURODEX_CONFIG_DIR", _DEFAULT_CONFIG_DIR))
     return EngramConfig(data_dir=data_dir, config_dir=config_dir)

@@ -13,9 +13,9 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from engram.config import EngramConfig
-from engram.store import RepoStore, SearchResult
-from engram.synonyms import expand_query
+from neurodex.config import EngramConfig
+from neurodex.store import RepoStore, SearchResult
+from neurodex.synonyms import expand_query
 
 
 @dataclass

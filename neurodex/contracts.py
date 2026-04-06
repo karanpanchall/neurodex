@@ -16,9 +16,9 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engram.config import EngramConfig
-from engram.registry import Registry
-from engram.store import RepoStore
+from neurodex.config import EngramConfig
+from neurodex.registry import Registry
+from neurodex.store import RepoStore
 
 
 @dataclass

@@ -5,7 +5,7 @@ functions, and tests are affected. Uses bidirectional BFS through
 typed edges with risk scoring.
 
 Inspired by code-review-graph's approach but implemented independently
-using ENGRAM's edge system.
+using NEURODEX's edge system.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engram.store import RepoStore
+from neurodex.store import RepoStore
 
 
 SECURITY_KEYWORDS = frozenset({

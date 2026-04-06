@@ -15,8 +15,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engram.languages import EXTENSION_MAP, get_config, get_definition_types, has_ast_support, get_language
-from engram.store import Chunk, make_chunk_id
+from neurodex.languages import EXTENSION_MAP, get_config, get_definition_types, has_ast_support, get_language
+from neurodex.store import Chunk, make_chunk_id
 
 CHARS_PER_TOKEN = 4
 MAX_CHUNK_TOKENS = 2000

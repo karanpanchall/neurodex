@@ -14,16 +14,16 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engram.chunker import chunk_file
-from engram.config import (
+from neurodex.chunker import chunk_file
+from neurodex.config import (
     MAX_FILE_SIZE,
     PRIORITY_FILES,
     SKIP_DIRS,
     SKIP_EXTENSIONS,
     EngramConfig,
 )
-from engram.languages import get_language, is_test_file, is_test_function
-from engram.store import Chunk, RepoStore, make_chunk_id
+from neurodex.languages import get_language, is_test_file, is_test_function
+from neurodex.store import Chunk, RepoStore, make_chunk_id
 
 
 @dataclass

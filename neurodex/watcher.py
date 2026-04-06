@@ -16,9 +16,9 @@ from pathlib import Path
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from engram.config import SKIP_DIRS, SKIP_EXTENSIONS, EngramConfig
-from engram.indexer import Indexer
-from engram.store import RepoStore
+from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, EngramConfig
+from neurodex.indexer import Indexer
+from neurodex.store import RepoStore
 
 
 class _DebouncedHandler(FileSystemEventHandler):

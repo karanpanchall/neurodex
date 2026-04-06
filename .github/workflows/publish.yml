@@ -17,7 +17,7 @@ jobs:
       - name: Install and verify import
         run: |
           pip install -e ".[languages]"
-          python -c "from engram.server import create_server; print('OK')"
+          python -c "from neurodex.server import create_server; print('OK')"
       - name: Build package
         run: |
           pip install build

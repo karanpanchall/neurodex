@@ -1,6 +1,6 @@
 """Global project registry.
 
-Single SQLite DB at ~/.local/share/engram/registry.db
+Single SQLite DB at ~/.local/share/neurodex/registry.db
 Tracks all indexed repos, workspaces, and path-to-repo mappings.
 """
 
@@ -13,7 +13,7 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
-from engram.config import EngramConfig
+from neurodex.config import EngramConfig
 
 
 @dataclass
@@ -290,7 +290,7 @@ class Registry:
         if not repos:
             return {
                 "status": "unindexed",
-                "message": "No projects indexed yet. Run `engram init` to index the current directory.",
+                "message": "No projects indexed yet. Run `neurodex init` to index the current directory.",
             }
 
         return {

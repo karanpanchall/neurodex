@@ -17,10 +17,10 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from engram.config import SKIP_DIRS, SKIP_EXTENSIONS, MAX_FILE_SIZE, EngramConfig
-from engram.indexer import Indexer
-from engram.registry import Registry
-from engram.store import RepoStore
+from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, MAX_FILE_SIZE, EngramConfig
+from neurodex.indexer import Indexer
+from neurodex.registry import Registry
+from neurodex.store import RepoStore
 
 
 @dataclass
