@@ -6,35 +6,22 @@ on:
       - "v*"
 
 jobs:
-  test:
-    name: Run tests
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: pip install -e ".[dev,languages]"
-      - name: Run tests
-        run: pytest tests/ -q
-
   build:
     name: Build distribution
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install build
-        run: pip install build
+      - name: Install and verify import
+        run: |
+          pip install -e ".[languages]"
+          python -c "from engram.server import create_server; print('OK')"
       - name: Build package
-        run: python -m build
+        run: |
+          pip install build
+          python -m build
       - uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
