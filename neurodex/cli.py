@@ -537,13 +537,44 @@ def install():
     with open(settings_path, "w") as f:
         json.dump(settings, f, indent=2)
 
-    click.echo(f"Added NEURODEX to {settings_path}")
-    click.echo("MCP server config:")
-    click.echo(json.dumps(settings["mcpServers"]["neurodex"], indent=2))
+    click.echo(f"Added MCP server to {settings_path}")
 
+    _install_skill_symlink()
     _inject_claude_md_instructions()
 
     click.echo("\nRestart Claude Code to activate.")
+
+
+def _install_skill_symlink():
+    """Symlink SKILL.md into both Claude Code and Codex skills directories."""
+    skill_source = Path(__file__).parent.parent / "claude-code" / "skills" / "neurodex" / "SKILL.md"
+
+    if not skill_source.exists():
+        try:
+            import importlib.resources
+            package_dir = Path(importlib.resources.files("neurodex")).parent
+            skill_source = package_dir / "claude-code" / "skills" / "neurodex" / "SKILL.md"
+        except Exception:
+            pass
+
+    if not skill_source.exists():
+        click.echo("SKILL.md not found in package, skipping skill symlink.")
+        return
+
+    resolved_source = skill_source.resolve()
+
+    targets = [
+        Path.home() / ".claude" / "skills" / "neurodex" / "SKILL.md",
+        Path.home() / ".codex" / "skills" / "neurodex" / "SKILL.md",
+    ]
+
+    for target in targets:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.is_symlink() or target.exists():
+            target.unlink()
+        target.symlink_to(resolved_source)
+        platform = "Claude Code" if ".claude" in str(target) else "Codex"
+        click.echo(f"  {platform}: {target} → {resolved_source}")
 
 
 def _inject_claude_md_instructions():
