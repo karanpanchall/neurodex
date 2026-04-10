@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "neurodex"
-version = "0.2.1"
+version = "0.3.0"
 description = "Complete project memory for AI code assistants. One call, full context, zero guessing."
 readme = "README.md"
 requires-python = ">=3.11"
