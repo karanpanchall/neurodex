@@ -17,7 +17,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, MAX_FILE_SIZE, EngramConfig
+from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, MAX_FILE_SIZE, NeurodexConfig
 from neurodex.indexer import Indexer
 from neurodex.registry import Registry
 from neurodex.store import RepoStore
@@ -41,7 +41,7 @@ class Reconciler:
         store: RepoStore,
         indexer: Indexer,
         registry: Registry,
-        config: EngramConfig,
+        config: NeurodexConfig,
     ) -> None:
         self._store = store
         self._indexer = indexer

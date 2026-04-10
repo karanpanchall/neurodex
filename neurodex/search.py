@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from neurodex.config import EngramConfig
+from neurodex.config import NeurodexConfig
 from neurodex.store import RepoStore, SearchResult
 from neurodex.synonyms import expand_query
 
@@ -51,7 +51,7 @@ PRIORITY_DOC_NAMES = {"CLAUDE.md", "AGENTS.md", "README.md", "ARCHITECTURE.md"}
 class SearchEngine:
     """Searches across repo stores with ranking."""
 
-    def __init__(self, config: EngramConfig) -> None:
+    def __init__(self, config: NeurodexConfig) -> None:
         self._config = config
         self._stores: dict[str, RepoStore] = {}
 

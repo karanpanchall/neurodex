@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from itertools import groupby
 from pathlib import Path
 
-from neurodex.config import EngramConfig
+from neurodex.config import NeurodexConfig
 from neurodex.store import RepoStore
 
 
@@ -55,7 +55,7 @@ class ProjectBrain:
     token_estimate: int = 0
 
 
-def generate_brain(store: RepoStore, config: EngramConfig) -> ProjectBrain:
+def generate_brain(store: RepoStore, config: NeurodexConfig) -> ProjectBrain:
     """Generate a complete project brain from indexed data."""
     brain = ProjectBrain(
         name=store.repo_name,
@@ -151,7 +151,7 @@ def render_brain(brain: ProjectBrain, store: RepoStore | None = None) -> str:
 def render_brain_for_repo(
     repo_id: str,
     repo_name: str,
-    config: EngramConfig,
+    config: NeurodexConfig,
 ) -> str | None:
     """Generate and render brain for a specific repo. Returns None if not indexed."""
     db_path = config.repo_db_path(repo_id)

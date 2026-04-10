@@ -7,12 +7,52 @@ description: Complete project memory for AI code assistants. Persistent context 
 
 Persistent project memory. Call `neurodex_brain` first on every session.
 
+## HARD RULE — use viz before Grep on symbols
+
+When you're about to `Grep` for a function, class, method, or variable name,
+or `Read` a source file to understand its structure, **call
+`mcp__neurodex__neurodex_viz` first**:
+
+- Looking up a symbol? → `mcp__neurodex__neurodex_viz target="SymbolName"`
+  (returns definition, callers, importers, references — in one tool call,
+  no ANSI, ~30 lines).
+- Understanding a file? → `mcp__neurodex__neurodex_viz file="path/to/x.py"`
+  (imports + every symbol with signatures + external-caller counts).
+- Not sure what's indexed? → `mcp__neurodex__neurodex_viz` with no args
+  (project overview).
+
+A `PreToolUse` hook auto-injects viz output when you Grep a known symbol,
+so you'll see the graph view either way — but calling viz directly is
+cheaper, more accurate, and keeps your investigation on the graph rather
+than line-by-line text matching.
+
 ## Tools
 
 ### Context
 - `mcp__neurodex__neurodex_brain` - Complete project brain. Call this FIRST.
 - `mcp__neurodex__neurodex_status` - Index health and project info
 - `mcp__neurodex__neurodex_list_projects` - All indexed repos and workspaces
+
+### Visualize (see what Claude sees)
+- `mcp__neurodex__neurodex_viz` - Render the memory graph as scannable text.
+  Three modes in one tool:
+  - **No args** → overview: file/symbol/edge counts, edge-kind bar chart,
+    top files by symbol density, most-imported internal modules.
+  - **`target="SymbolName"`** → symbol focus: definition, callers, importers
+    (resolved through containing module), inheritors, text references.
+  - **`file="path/to/file.py"`** → file view: imports + every symbol in line
+    order with signatures, methods nested, per-symbol external-caller count.
+  Calling this tool also updates `~/.config/neurodex/viz-state.json`, which
+  the `neurodex statusline` command displays below Claude Code's input box.
+
+### Slash command
+- **`/neurodex viz`** → overview
+- **`/neurodex viz SymbolName`** → symbol focus
+- **`/neurodex viz --file store.py`** → file view
+
+  The slash command expands to a prompt instructing you to call
+  `mcp__neurodex__neurodex_viz` with the parsed arguments and paste the
+  output in a fenced code block. It also refreshes the status line.
 
 ### Search
 - `mcp__neurodex__neurodex_search` - Full-text search with synonym expansion

@@ -20,12 +20,15 @@ from neurodex.brain import render_brain_for_repo
 from neurodex.chunker import chunk_insight
 from neurodex.contracts import analyze_cross_project_impact, render_cross_project_impact
 from neurodex.impact import analyze_impact, render_impact
-from neurodex.config import EngramConfig, load_config
+from neurodex.config import NeurodexConfig, load_config
 from neurodex.project import detect_repo
 from neurodex.registry import Registry
 from neurodex.search import RankedResult, SearchEngine
 from neurodex.store import RepoStore
+from neurodex.viz import render_file, render_overview, render_symbol, set_focus
 from neurodex.workspace import WorkspaceManager
+
+import click
 
 _session_context: dict = {}
 
@@ -224,6 +227,28 @@ def create_server() -> Server:
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
+                name="neurodex_viz",
+                description=(
+                    "Visualize the project memory graph as compact text. Same data as "
+                    "neurodex_brain / neurodex_references but rendered as a scannable map "
+                    "with bar charts, symbol neighborhoods, and file structure. "
+                    "Three modes: omit `target` for an overview (counts, edges, hub files, "
+                    "module deps); pass `target` for symbol focus (callers, importers, "
+                    "references); pass `file` to see all symbols in a file with edge counts. "
+                    "Use this when you (or the user) want to *see* the graph at a glance "
+                    "before reading code."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "target": {"type": "string", "description": "Symbol name to focus on (function, class, method)"},
+                        "file": {"type": "string", "description": "File path substring to show all its symbols"},
+                        "repo_id": {"type": "string", "description": "Specific repo (auto-detects from cwd)"},
+                        "workspace": {"type": "string", "description": "Workspace name (selects first repo)"},
+                    },
+                },
+            ),
+            Tool(
                 name="neurodex_list_projects",
                 description="List all indexed repos and workspaces. Use when unsure which project to search.",
                 inputSchema={"type": "object", "properties": {}},
@@ -311,6 +336,8 @@ def create_server() -> Server:
                 return _handle_brain(arguments)
             elif name == "neurodex_status":
                 return _handle_status()
+            elif name == "neurodex_viz":
+                return _handle_viz(arguments)
             elif name == "neurodex_list_projects":
                 return _handle_list_projects()
             elif name == "neurodex_workspace_create":
@@ -521,6 +548,61 @@ def create_server() -> Server:
             return [TextContent(type="text", text=f"No index found for repo {repo_id}. Run `neurodex init`.")]
 
         return [TextContent(type="text", text=brain_text)]
+
+    def _handle_viz(args: dict) -> list[TextContent]:
+        target = args.get("target")
+        file_query = args.get("file")
+        repo_id = args.get("repo_id")
+        workspace = args.get("workspace")
+
+        if not repo_id:
+            resolution = _resolve_repo_ids(workspace=workspace)
+            if resolution["status"] == "resolved":
+                repo_id = resolution["repo_ids"][0]
+            elif resolution["status"] == "disambiguation_needed":
+                return [TextContent(type="text", text=json.dumps(resolution, indent=2))]
+            else:
+                repos = registry.list_repos()
+                if not repos:
+                    return [TextContent(type="text", text="No projects indexed. Run `neurodex init` first.")]
+                return [TextContent(type="text", text=json.dumps({
+                    "status": "pick_a_project",
+                    "available": [
+                        {"id": r.id, "name": r.name} for r in repos
+                    ],
+                }, indent=2))]
+
+        repo_record = registry.get_repo(repo_id)
+        if not repo_record:
+            return [TextContent(type="text", text=f"Unknown repo: {repo_id}")]
+
+        db_path = config.repo_db_path(repo_id)
+        if not db_path.exists():
+            return [TextContent(type="text", text=f"No index for repo {repo_id}. Run `neurodex init`.")]
+
+        repo_root = repo_record.local_paths[0] if repo_record.local_paths else None
+        store = RepoStore(db_path, repo_id, repo_record.name)
+        try:
+            if file_query:
+                rendered = render_file(store, file_query, repo_root)
+            elif target:
+                rendered = render_symbol(store, target, repo_root)
+            else:
+                rendered = render_overview(store, repo_root)
+        finally:
+            store.close()
+
+        # Persist focus so the statusLine script picks it up on next tick.
+        set_focus(
+            repo_id=repo_id,
+            repo_name=repo_record.name,
+            repo_root=repo_root,
+            target=target,
+            file=file_query,
+        )
+
+        # Strip ANSI for the MCP tool result so it renders cleanly in any client.
+        return [TextContent(type="text", text=click.unstyle(rendered))]
 
     def _handle_trace(args: dict) -> list[TextContent]:
         resolution = _resolve_repo_ids()

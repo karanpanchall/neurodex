@@ -13,7 +13,7 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
-from neurodex.config import EngramConfig
+from neurodex.config import NeurodexConfig
 
 
 @dataclass
@@ -38,7 +38,7 @@ class WorkspaceRecord:
 class Registry:
     """Global registry of all indexed repos and workspaces."""
 
-    def __init__(self, config: EngramConfig) -> None:
+    def __init__(self, config: NeurodexConfig) -> None:
         self._config = config
         config.ensure_dirs()
         self._db_path = config.registry_db_path

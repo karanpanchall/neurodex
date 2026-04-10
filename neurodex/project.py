@@ -76,7 +76,16 @@ def detect_repo(path: Path | str) -> RepoIdentity:
     else:
         repo_id = _hash_id(str(path))
 
-    name = (git_root or path).name
+    # Prefer the name from the git remote URL — a local clone might live in
+    # a directory with a stale name after a rename. Fall back to directory.
+    name: str | None = None
+    if git_remote:
+        last = git_remote.rstrip("/").split("/")[-1]
+        last = last.removesuffix(".git")
+        if last:
+            name = last
+    if not name:
+        name = (git_root or path).name
 
     return RepoIdentity(
         repo_id=repo_id,

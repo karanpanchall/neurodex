@@ -16,7 +16,7 @@ from pathlib import Path
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, EngramConfig
+from neurodex.config import SKIP_DIRS, SKIP_EXTENSIONS, NeurodexConfig
 from neurodex.indexer import Indexer
 from neurodex.store import RepoStore
 
@@ -94,7 +94,7 @@ class FileWatcher:
         self,
         root: Path,
         indexer: Indexer,
-        config: EngramConfig,
+        config: NeurodexConfig,
     ) -> None:
         self._root = root.resolve()
         self._handler = _DebouncedHandler(

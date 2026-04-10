@@ -18,13 +18,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from engram.brain import generate_brain, render_brain
-from engram.config import load_config
-from engram.registry import Registry
-from engram.search import SearchEngine
-from engram.store import RepoStore
+from neurodex.brain import generate_brain, render_brain
+from neurodex.config import load_config
+from neurodex.registry import Registry
+from neurodex.search import SearchEngine
+from neurodex.store import RepoStore
 
-# Repo IDs (from engram status)
+# Repo IDs (from neurodex status)
 REPOS = {
     "backend": ("b5b44a092bca", "GakkoDeck-Backend", "/Users/karanpanchal/GitPoroject/GakkoDeck-Backend"),
     "frontend": ("368383db37ee", "GakkoDeck-Frontend", "/Users/karanpanchal/GitPoroject/GakkoDeck-Frontend"),

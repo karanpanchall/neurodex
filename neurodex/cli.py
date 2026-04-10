@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import sys
 import time
@@ -29,6 +30,14 @@ from neurodex.reconciler import Reconciler
 from neurodex.registry import Registry
 from neurodex.search import SearchEngine
 from neurodex.store import RepoStore
+from neurodex.viz import (
+    render_file,
+    render_overview,
+    render_statusline,
+    render_symbol,
+    set_focus,
+    _load_state,
+)
 from neurodex.workspace import WorkspaceManager
 
 
@@ -180,6 +189,210 @@ def brain(path: str):
         click.echo("Failed to generate brain.")
 
     registry.close()
+
+
+@main.command()
+@click.argument("target", required=False)
+@click.option("--file", "-f", "file_path", default=None,
+              help="Show all symbols in a file (matches by substring).")
+@click.option("--repo", default=".", type=click.Path(exists=True),
+              help="Project path (defaults to current directory).")
+def viz(target: str | None, file_path: str | None, repo: str):
+    """Visualize the project memory graph in your terminal.
+
+    \b
+    Examples:
+      neurodex viz                    # overview of the indexed graph
+      neurodex viz analyze_impact     # focus on a symbol
+      neurodex viz --file store.py    # all symbols + edges in a file
+
+    Designed to be called inside a Claude Code session — same data the
+    LLM sees through neurodex_brain / neurodex_references, in a form
+    you can read at a glance.
+    """
+    config = load_config()
+    root = Path(repo).resolve()
+    identity = detect_repo(root)
+    db_path = config.repo_db_path(identity.repo_id)
+
+    if not db_path.exists():
+        click.echo(f"Project '{identity.name}' is not indexed. Run `neurodex init` first.")
+        return
+
+    store = RepoStore(db_path, identity.repo_id, identity.name)
+    try:
+        repo_root = str(identity.local_path)
+        if file_path:
+            click.echo(render_file(store, file_path, repo_root))
+        elif target:
+            click.echo(render_symbol(store, target, repo_root))
+        else:
+            click.echo(render_overview(store, repo_root))
+
+        # Persist the focus so the statusLine script (and any /neurodex viz
+        # slash command) can show what Claude is currently looking at.
+        set_focus(
+            repo_id=identity.repo_id,
+            repo_name=identity.name,
+            repo_root=repo_root,
+            target=target,
+            file=file_path,
+        )
+    finally:
+        store.close()
+
+
+@main.command()
+def statusline():
+    """Print a one-line status summary for Claude Code's statusLine.
+
+    Configured via ~/.claude/settings.json:
+
+        "statusLine": {
+          "type": "command",
+          "command": "neurodex statusline"
+        }
+
+    Claude Code pipes session JSON (including cwd) on stdin. We use that
+    to auto-detect the active repo, then overlay the current focus from
+    ~/.config/neurodex/viz-state.json (written by `neurodex viz <target>`
+    or the mcp__neurodex__neurodex_viz tool).
+    """
+    config = load_config()
+
+    # Claude Code sends a JSON context object on stdin. Read it if present.
+    stdin_ctx: dict = {}
+    if not sys.stdin.isatty():
+        try:
+            raw = sys.stdin.read()
+            if raw and raw.strip():
+                stdin_ctx = json.loads(raw)
+        except (json.JSONDecodeError, OSError):
+            stdin_ctx = {}
+
+    cwd = (
+        (stdin_ctx.get("workspace") or {}).get("current_dir")
+        or stdin_ctx.get("cwd")
+        or os.environ.get("NEURODEX_CWD")
+        or os.getcwd()
+    )
+
+    state = _load_state()
+
+    # Prefer auto-detection from the live cwd; fall back to stored state.
+    repo_id: str | None = None
+    repo_name: str | None = None
+    repo_root: str | None = None
+    try:
+        identity = detect_repo(Path(cwd).resolve())
+        registry = Registry(config)
+        repo_record = registry.get_repo(identity.repo_id)
+        registry.close()
+        if repo_record:
+            repo_id = identity.repo_id
+            repo_name = identity.name
+            repo_root = str(identity.local_path)
+    except Exception:
+        pass
+
+    if not repo_id and state.get("repo_id"):
+        repo_id = state["repo_id"]
+        repo_name = state.get("repo_name") or repo_id
+        repo_root = state.get("repo_root")
+
+    if not repo_id:
+        return  # nothing to show
+
+    db_path = config.repo_db_path(repo_id)
+    if not db_path.exists():
+        return
+
+    store = RepoStore(db_path, repo_id, repo_name or repo_id)
+    try:
+        # Only apply focus if it belongs to the repo we're currently in.
+        focus = state if state.get("repo_id") == repo_id else None
+        click.echo(render_statusline(store, repo_root, focus), nl=False)
+    finally:
+        store.close()
+
+
+@main.group()
+def hook():
+    """Claude Code hooks that integrate NEURODEX into tool calls.
+
+    Configured in ~/.claude/settings.json by `neurodex install`.
+    """
+    pass
+
+
+@hook.command("pretool")
+def hook_pretool():
+    """PreToolUse hook — nudges Claude to use viz before Grep/Read on symbols.
+
+    Claude Code sends a JSON payload on stdin describing the tool about to
+    run. When it's a Grep on a symbol-shaped pattern, we run
+    `render_symbol` against the local index and emit the output as
+    additionalContext, so the LLM sees the graph view *before* the Grep
+    fires. No blocking — the Grep still runs; it just has context now.
+    """
+    try:
+        ctx = json.load(sys.stdin)
+    except (json.JSONDecodeError, OSError):
+        return
+
+    tool_name = ctx.get("tool_name", "")
+    tool_input = ctx.get("tool_input") or {}
+    cwd = ctx.get("cwd") or os.environ.get("NEURODEX_CWD") or os.getcwd()
+
+    extra: str | None = None
+
+    if tool_name == "Grep":
+        pattern = (tool_input.get("pattern") or "").strip()
+        # Valid identifier, 3+ chars, no regex metacharacters. Matching
+        # "BrandProfile" and "analyze_impact" but skipping "log.*Error"
+        # or single-letter greps.
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]{2,}$", pattern):
+            extra = _viz_symbol_context(cwd, pattern)
+
+    if extra:
+        payload = {
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "additionalContext": extra,
+            }
+        }
+        click.echo(json.dumps(payload))
+
+
+def _viz_symbol_context(cwd: str, name: str) -> str | None:
+    """Return ANSI-stripped symbol viz output for the repo containing cwd."""
+    try:
+        config = load_config()
+        identity = detect_repo(Path(cwd).resolve())
+        db_path = config.repo_db_path(identity.repo_id)
+        if not db_path.exists():
+            return None
+        store = RepoStore(db_path, identity.repo_id, identity.name)
+        try:
+            # Only inject when we have an *exact* hit. Substring matches
+            # would fire on every grep for common words.
+            row = store._conn.execute(
+                "SELECT 1 FROM nodes WHERE name=? LIMIT 1", (name,)
+            ).fetchone()
+            if not row:
+                return None
+            rendered = render_symbol(store, name, str(identity.local_path))
+        finally:
+            store.close()
+    except Exception:
+        return None
+
+    stripped = click.unstyle(rendered)
+    return (
+        f"[neurodex auto-injected symbol graph for '{name}' — "
+        f"consider `mcp__neurodex__neurodex_viz target=\"{name}\"` "
+        f"instead of Grep when you want the graph view]\n\n{stripped}"
+    )
 
 
 @main.command()
@@ -534,12 +747,52 @@ def install():
         "args": ["-m", "neurodex.server"],
     }
 
+    # Register the statusLine command so viz output shows below the input box.
+    # Preserve any existing statusLine unless it's already ours.
+    existing_sl = settings.get("statusLine")
+    is_ours = (
+        isinstance(existing_sl, dict)
+        and "neurodex" in str(existing_sl.get("command", ""))
+    )
+    if not existing_sl or is_ours:
+        settings["statusLine"] = {
+            "type": "command",
+            "command": f"{sys.executable} -m neurodex.cli statusline",
+            "padding": 0,
+        }
+    else:
+        click.echo(
+            f"Note: statusLine already set to '{existing_sl.get('command', '?')}'. "
+            "Leaving it alone. To use NEURODEX viz in the status line, set:\n"
+            f'  "statusLine": {{"type":"command","command":"{sys.executable} -m neurodex.cli statusline"}}'
+        )
+
+    # Register the PreToolUse hook so the LLM sees viz output before it
+    # Greps for a symbol. Merge with any existing hooks without clobbering.
+    hook_command = f"{sys.executable} -m neurodex.cli hook pretool"
+    hooks_cfg = settings.setdefault("hooks", {})
+    pre_list = hooks_cfg.setdefault("PreToolUse", [])
+    already_installed = False
+    for entry in pre_list:
+        for hk in entry.get("hooks", []):
+            if "neurodex" in str(hk.get("command", "")) and "pretool" in str(hk.get("command", "")):
+                already_installed = True
+                break
+        if already_installed:
+            break
+    if not already_installed:
+        pre_list.append({
+            "matcher": "Grep",
+            "hooks": [{"type": "command", "command": hook_command}],
+        })
+
     with open(settings_path, "w") as f:
         json.dump(settings, f, indent=2)
 
     click.echo(f"Added MCP server to {settings_path}")
 
     _install_skill_symlink()
+    _install_slash_command()
     _inject_claude_md_instructions()
 
     click.echo("\nRestart Claude Code to activate.")
@@ -575,6 +828,31 @@ def _install_skill_symlink():
         target.symlink_to(resolved_source)
         platform = "Claude Code" if ".claude" in str(target) else "Codex"
         click.echo(f"  {platform}: {target} → {resolved_source}")
+
+
+def _install_slash_command():
+    """Symlink the /neurodex slash command into ~/.claude/commands/."""
+    source = Path(__file__).parent.parent / "claude-code" / "commands" / "neurodex.md"
+
+    if not source.exists():
+        try:
+            import importlib.resources
+            package_dir = Path(importlib.resources.files("neurodex")).parent
+            source = package_dir / "claude-code" / "commands" / "neurodex.md"
+        except Exception:
+            pass
+
+    if not source.exists():
+        click.echo("Slash command template not found, skipping.")
+        return
+
+    resolved = source.resolve()
+    target = Path.home() / ".claude" / "commands" / "neurodex.md"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.is_symlink() or target.exists():
+        target.unlink()
+    target.symlink_to(resolved)
+    click.echo(f"  Slash command: {target} → {resolved}")
 
 
 def _inject_claude_md_instructions():

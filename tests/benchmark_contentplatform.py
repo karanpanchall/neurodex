@@ -20,9 +20,9 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from engram.config import load_config
-from engram.registry import Registry
-from engram.search import SearchEngine
+from neurodex.config import load_config
+from neurodex.registry import Registry
+from neurodex.search import SearchEngine
 
 # The repo ID for ContentPlatform (detected during init)
 CONTENT_PLATFORM_REPO_ID = "6ed6aeb21072"
@@ -281,7 +281,7 @@ def print_results(results: dict) -> None:
     m = results["metrics"]
 
     print(f"\n{'='*70}")
-    print(f"  ENGRAM BENCHMARK: {results['label']}")
+    print(f"  NEURODEX BENCHMARK: {results['label']}")
     print(f"  {results['timestamp']}")
     print(f"{'='*70}")
 

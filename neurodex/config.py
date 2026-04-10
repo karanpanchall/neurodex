@@ -58,7 +58,7 @@ PRIORITY_FILES: tuple[str, ...] = (
 
 
 @dataclass(frozen=True)
-class EngramConfig:
+class NeurodexConfig:
     """Immutable configuration for NEURODEX."""
 
     data_dir: Path = field(default_factory=lambda: _DEFAULT_DATA_DIR)
@@ -86,8 +86,8 @@ class EngramConfig:
         self.config_dir.mkdir(parents=True, exist_ok=True)
 
 
-def load_config() -> EngramConfig:
+def load_config() -> NeurodexConfig:
     """Load config, respecting environment variable overrides."""
     data_dir = Path(os.environ.get("NEURODEX_DATA_DIR", _DEFAULT_DATA_DIR))
     config_dir = Path(os.environ.get("NEURODEX_CONFIG_DIR", _DEFAULT_CONFIG_DIR))
-    return EngramConfig(data_dir=data_dir, config_dir=config_dir)
+    return NeurodexConfig(data_dir=data_dir, config_dir=config_dir)

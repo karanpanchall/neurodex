@@ -16,7 +16,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from neurodex.config import EngramConfig
+from neurodex.config import NeurodexConfig
 from neurodex.registry import Registry
 from neurodex.store import RepoStore
 
@@ -226,7 +226,7 @@ def match_contracts(
 def analyze_cross_project_impact(
     changed_file: str,
     changed_repo_id: str,
-    config: EngramConfig,
+    config: NeurodexConfig,
     registry: Registry,
 ) -> CrossProjectImpact:
     """Analyze cross-project impact of a backend change.

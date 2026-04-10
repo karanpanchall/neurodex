@@ -20,7 +20,7 @@ from neurodex.config import (
     PRIORITY_FILES,
     SKIP_DIRS,
     SKIP_EXTENSIONS,
-    EngramConfig,
+    NeurodexConfig,
 )
 from neurodex.languages import get_language, is_test_file, is_test_function
 from neurodex.store import Chunk, RepoStore, make_chunk_id
@@ -54,7 +54,7 @@ class IndexProgress:
 class Indexer:
     """Indexes a repository into a RepoStore."""
 
-    def __init__(self, store: RepoStore, config: EngramConfig) -> None:
+    def __init__(self, store: RepoStore, config: NeurodexConfig) -> None:
         self._store = store
         self._config = config
 

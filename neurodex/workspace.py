@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from neurodex.config import EngramConfig
+from neurodex.config import NeurodexConfig
 from neurodex.project import RepoIdentity, detect_repo
 from neurodex.registry import Registry, RepoRecord, WorkspaceRecord
 
@@ -16,7 +16,7 @@ from neurodex.registry import Registry, RepoRecord, WorkspaceRecord
 class WorkspaceManager:
     """High-level workspace operations."""
 
-    def __init__(self, registry: Registry, config: EngramConfig) -> None:
+    def __init__(self, registry: Registry, config: NeurodexConfig) -> None:
         self._registry = registry
         self._config = config
 
